@@ -1,13 +1,33 @@
-import express from 'express';
-import dotenv from 'dotenv';
+import express from "express";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import logger from "./middleware/logger.js";
+import errorHandler from "./middleware/errorHandler.js";
+import cart from "./routes/cart.js";
 
+//config
 dotenv.config();
-
 const app = express();
-// const PORT = ;
+const PORT = process.env.PORT;
+mongoose.connect(process.env.CONNECTION_STRING);
+const database = mongoose.connection;
 
+//Middlewares
 app.use(express.json());
+app.use(logger);
 
-app.listen(PORT, () => {
-	console.log(`Server is running on port ${PORT}`);
+//Routes
+app.use("/api/cart", cart);
+
+//DB Emit events
+database.on("error", (error) => console.log(error));
+database.once("connected", () => {
+  console.log("DB connected");
+  //Startar servern
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 });
+
+//error handling
+app.use(errorHandler);
