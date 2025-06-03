@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import Order from '../models/order.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
+
+// HUSK Å LEGGE TIL FEILMELDINGER / STATUS / ERROR-CODES / FEILHÅNDTERING OSV
 
 // ----------------------------------------------------------------------------------------
 
@@ -28,23 +31,44 @@ router.get('/orders/:userId', async (req, res) => {
 
 // ----------------------------------------------------------------------------------------
 
-// USER (POST) - CREATES ORDER FOR CART RECEIVED IN REQ.BODY - CREATES ORDER
+// USER (POST) - CREATES ORDER FOR CART(id) RECEIVED IN REQ.BODY (or guest order if not)
 // ORDER IS SENT BACK TO THE USER IN THE RESPONSE
 
-// router.post('/orders', async (req, res) => {
-// 	const newOrder = await Order.find();
-// 	res.json({
-// 		message: 'I made a new order! This is it:',
-// 		data: newOrder,
-// 	});
-// POST = sender inn en ny order - sender inn cartId (handlekurv med egen ID
-// knyttet til userID, carten har produkter i seg) - leter etter den carten
-// og dens innhold/pris/antall OSV... - lager en ny order basert på *DEN* carten
-// TLDR: vi kan altså gjøre et POST anrop - lage ny order - mha cartID!
-// REPONSE = den nye orderen returneres - så klienten/frontenden kommer "åt" det
-// });
+router.post('/orders', async (req, res) => {
+	let { userId, items } = req.body;
+	// hämter userId & items-arrayen från req.body AKA cart -- om cart inte finns/ingen items skapas et guestId
+
+	// If no userId is provided, generate a guest ID
+	if (!userId) {
+		userId = 'guest-' + uuidv4().slice(0, 5);
+		// om userId inte finns, ger dig en guestId
+	} else {
+	}
+
+	const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+	// calculates all prices in total
+
+	const newOrder = new Order({
+		// Vid POST-anrop måste man specifikt säga vad som ska finnas med i ordern.
+		// Det finns redan en blueprint (Schema), men vid POST måste man ändå
+		// säga till koden att "det här måste du faktiskt ha med".
+		userId,
+		items,
+		total,
+	});
+
+	await newOrder.save();
+	// sparar den nya beställningen
+
+	res.json({
+		message: 'Order created!',
+		data: newOrder,
+		// order skickas tillbaka til användaren här
+	});
+});
 
 export default router;
+
 // ----------------------------------------------------------------------------------------
 // ADMIN -->
 // Method: GET
