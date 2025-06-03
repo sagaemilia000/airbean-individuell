@@ -2,6 +2,14 @@ import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema(
 	{
+		orderId: {
+			type: String,
+			required: true,
+		},
+		cartId: {
+			type: String,
+			required: true,
+		},
 		userId: {
 			type: String,
 			// inte required, om man vill beställa som guest
@@ -10,10 +18,9 @@ const orderSchema = new mongoose.Schema(
 			type: String,
 			// använder guestId om userId inte finns (logiken finns i routes - orders.js)
 		},
-		items: [
+		products: [
 			{
 				prodId: String,
-				cartId: String,
 				qty: Number,
 				title: String,
 				price: Number,
