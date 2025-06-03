@@ -7,12 +7,12 @@ import ordersRoutes from './routes/orders.js';
 dotenv.config();
 
 const app = express();
-const PORT = 8070;
-mongoose.connect(process.env.CONNECTION_STRING); // henter connection stringen fra .env filen vår
-
+const PORT = process.env.PORT;
+mongoose.connect(process.env.CONNECTION_STRING);
 const database = mongoose.connection;
 
 app.use(express.json());
+app.use(logger);
 
 // ROUTES
 app.use('/api', menuRoutes);
