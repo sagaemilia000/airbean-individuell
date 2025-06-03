@@ -13,6 +13,7 @@ const orderSchema = new mongoose.Schema(
 		items: [
 			{
 				prodId: String,
+				cartId: String,
 				qty: Number,
 				title: String,
 				price: Number,

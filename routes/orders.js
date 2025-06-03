@@ -35,7 +35,7 @@ router.get('/orders/:userId', async (req, res) => {
 // ORDER IS SENT BACK TO THE USER IN THE RESPONSE
 
 router.post('/orders', async (req, res) => {
-	let { userId, items } = req.body;
+	let { cartId, userId, items } = req.body;
 	// hämter userId & items-arrayen från req.body AKA cart -- om cart inte finns/ingen items skapas et guestId
 
 	// If no userId is provided, generate a guest ID
@@ -53,6 +53,7 @@ router.post('/orders', async (req, res) => {
 		// Det finns redan en blueprint (Schema), men vid POST måste man ändå
 		// säga till koden att "det här måste du faktiskt ha med".
 		userId,
+		cartId,
 		items,
 		total,
 	});
