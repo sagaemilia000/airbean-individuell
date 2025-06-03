@@ -38,22 +38,22 @@ router.get("/:cartId", async (req, res, next) => {
 
 // PUT update cart
 router.put("/", async (req, res, next) => {
+  // Hämta userId från global.user om någon är inloggad
+  const userId = global.user ? global.user.userId : null;
+  // Plocka ut cartId och guestId (om de finns) samt prodId och qty
+  const { prodId, qty, cartId, guestId } = req.body;
+
+  // Grundläggande validering – måste skicka med prodId och qty
+  if (!prodId || qty === undefined) {
+    return next({ status: 400, message: "prodId och qty krävs" });
+  }
+
   try {
-    const { prodId, qty, cartId, userId, guestId } = req.body;
-    if (!prodId || qty === undefined) {
-      return res.status(400).json({ success: false, message: "Missing prodId or qty" });
-    }
-
-    const result = await updateCart({ cartId, userId, guestId, prodId, qty });
-
-    res.json({
-      success: true,
-      cart: result.cart,
-      cartId: result.cartId, // Endast om ny
-      guestId: result.guestId, // Endast om ny
-    });
-  } catch (err) {
-    next(err);
+    // Skicka alla id:n vidare till service-funktionen
+    const cart = await updateCart({ cartId, userId, guestId, prodId, qty });
+    res.json({ success: true, cart });
+  } catch (error) {
+    next({ status: 500, message: error.message });
   }
 });
 

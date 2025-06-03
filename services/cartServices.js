@@ -28,71 +28,69 @@ export async function getCartById(cartId) {
 }
 
 //Uppdatera cart
-export async function updateCart({ cartId, userId, guestId, prodId, qty }) {
-  // Skapa variabler för eventuella nya id:n
-  let newCartId = null;
-  let newGuestId = null;
 
-  // 1. Försök hitta rätt cart beroende på vad som skickas in:
+// Hjälpfunktion som hittar en befintlig cart eller skapar en ny om ingen finns
+async function findOrCreateCart({ cartId, guestId, userId }) {
   let cart = null;
 
-  // - Om det redan finns ett cartId, hämta carten med det
+  // 1. Leta först på cartId (om du redan har en aktiv cart)
   if (cartId) {
     cart = await Cart.findOne({ cartId });
-
-    // - Om det inte finns cartId men det finns guestId, försök hitta cart med guestId
-  } else if (guestId) {
+  }
+  //Om inget cartId finns, och användaren är inloggad – leta på userId
+  else if (userId) {
+    cart = await Cart.findOne({ userId });
+  }
+  // 3. Om inget cartId eller userId finns, kolla efter guestId
+  else if (guestId) {
     cart = await Cart.findOne({ guestId });
-    if (cart) {
-      cartId = cart.cartId; // Spara cartId för ev. användning senare
-    }
   }
 
-  // 2. Om ingen cart hittas – skapa en ny cart!
+  // 4. Om ingen cart hittats än, så skapas en ny
   if (!cart) {
-    // Skapa nytt cartId (cart-xxxxx)
-    newCartId = "cart-" + uuid().slice(0, 5);
-    cartId = newCartId;
-    // Om det inte är en inloggad användare och ingen guestId finns, skapa guestId
-    if (!userId && !guestId) {
-      newGuestId = "guest-" + uuid().slice(0, 5);
-      guestId = newGuestId;
-    }
-    // Skapa en ny Cart med rätt id:n och tom produktlista
     cart = new Cart({
-      cartId,
+      // Skapa nytt cartId om inget finns (alltid "cart-xxxxx")
+      cartId: cartId || "cart-" + uuid().slice(0, 5),
+      // Koppla carten till userId om användaren är inloggad, annars null
       userId: userId || null,
-      guestId: guestId || newGuestId || null,
+      // Koppla carten till guestId om användaren inte är inloggad
+      guestId: guestId || (!userId ? "guest-" + uuid().slice(0, 5) : null),
       products: [],
     });
+    await cart.save(); // Spara i databasen direkt
   }
 
-  // 3. Hantera produktuppdatering i carten
-  // Kolla om produkten redan finns i varukorgen
-  const prodIndex = cart.products.findIndex((p) => p.prodId === prodId);
+  return cart;
+}
 
+// Servicefunktion för att uppdatera cartens innehåll (lägga till, uppdatera, ta bort produkt)
+export async function updateCart({ cartId, userId, guestId, prodId, qty }) {
+  // Hitta eller skapa carten först
+  let cart = await findOrCreateCart({ cartId, guestId, userId });
+
+  // Hitta om produkten redan finns i cartens produktlista
+  const index = cart.products.findIndex((p) => p.prodId === prodId);
+  //findIndex letar efter en produkt i listan där prodId matchar den produkt man vill lägga till/uppdatera/ta bort.
+  //findIndex() letar efter det första elementet i en array som uppfyller villkoret i din funktion.
+  //Om den INTE hittar någon match: returnerar den -1.
+
+  // Om qty är 0, ta bort produkten ur varukorgen
   if (qty === 0) {
-    // Om qty är 0, ta bort produkten ur varukorgen (om den finns)
-    if (prodIndex !== -1) cart.products.splice(prodIndex, 1);
-  } else {
-    // Om produkten inte finns, lägg till den
-    if (prodIndex === -1) {
-      cart.products.push({ prodId, qty });
-    } else {
-      // Om produkten redan finns, uppdatera antalet (qty)
-      cart.products[prodIndex].qty = qty;
-    }
+    if (index !== -1) cart.products.splice(index, 1);
+    //kollar ifall produkten finns(index inte = -1, isf splicear vi index, 1 alltså där i index produkten finns)
+  }
+  // Om produkten inte finns, lägg till den med rätt qty
+  else if (index === -1) {
+    cart.products.push({ prodId, qty });
+  }
+  // Om produkten redan finns, uppdatera antal (qty)
+  else {
+    cart.products[index].qty = qty;
+    //hämtar rätt produkt i products-arrayen med hjälp av index(matchningen från högre upp) och uppdaterar qty.
   }
 
-  // 4. Spara carten i databasen
+  // Spara ändringarna i databasen
   await cart.save();
-
-  // 5. Returnera resultatet
-  // Returnera alltid carten.
-  // Returnera cartId/guestId om de just skapades (så klienten kan spara dem)
-  return {
-    cart,
-    cartId: newCartId, // null om inget nytt skapats
-    guestId: newGuestId, // null om inget nytt skapats
-  };
+  // Returnera den uppdaterade carten
+  return cart;
 }
