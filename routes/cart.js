@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { v4 as uuid } from "uuid";
 import { getAllCarts, getCartById, updateCart } from "../services/cartServices.js";
+import validateCartInput from "../middleware/validateCartInput.js";
+import { validateProdId } from "../middleware/validateProdId.js";
 
 const router = Router();
 
@@ -37,16 +39,11 @@ router.get("/:cartId", async (req, res, next) => {
 });
 
 // PUT update cart
-router.put("/", async (req, res, next) => {
+router.put("/", validateCartInput, validateProdId, async (req, res, next) => {
   // Hämta userId från global.user om någon är inloggad
   const userId = global.user ? global.user.userId : null;
   // Plocka ut cartId och guestId (om de finns) samt prodId och qty
   const { prodId, qty, cartId, guestId } = req.body;
-
-  // Grundläggande validering – måste skicka med prodId och qty
-  if (!prodId || qty === undefined) {
-    return next({ status: 400, message: "prodId och qty krävs" });
-  }
 
   try {
     // Skicka alla id:n vidare till service-funktionen

@@ -67,10 +67,10 @@ async function findOrCreateCart({ cartId, guestId, userId }) {
 // Servicefunktion för att uppdatera cartens innehåll (lägga till, uppdatera, ta bort produkt)
 export async function updateCart({ cartId, userId, guestId, prodId, qty }) {
   //Kollar så att produkt id:t finns i menyn
-  const menuItem = await Menu.findOne({ prodId });
-  if (!menuItem) {
-    throw new Error("You can only add items from the menu!");
-  }
+  // const menuItem = await Menu.findOne({ prodId });
+  // if (!menuItem) {
+  //   throw new Error("You can only add items from the menu!");
+  // }
   // Hitta eller skapa carten först
   let cart = await findOrCreateCart({ cartId, guestId, userId });
 
