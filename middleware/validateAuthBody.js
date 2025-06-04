@@ -9,4 +9,4 @@ export function validateAuthBody(req, res, next) {
     }
 
     next();
-}
+};
