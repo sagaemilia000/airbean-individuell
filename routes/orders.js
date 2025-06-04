@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getAllOrders, getOrdersByUser, createOrderFromCart } from "../services/ordersServices.js";
+import validateCartId from "../middleware/validateCartId.js";
 
 const router = Router();
 
@@ -55,16 +56,9 @@ router.get("/orders/:userId", async (req, res, next) => {
 // (POST) - CREATES ORDER FOR CART(id) RECEIVED IN REQ.BODY (or guest order if not)
 // ORDER IS SENT BACK TO THE USER IN THE RESPONSE
 
-router.post("/orders", async (req, res, next) => {
+router.post("/orders", validateCartId, async (req, res, next) => {
   try {
     let { cartId } = req.body;
-
-    if (!cartId) {
-      return next({
-        status: 400,
-        message: "you need a cartId to see orders",
-      });
-    }
 
     const newOrder = await createOrderFromCart(cartId);
 
