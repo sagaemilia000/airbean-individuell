@@ -24,7 +24,6 @@ const menuSchema = new Schema(
 	},
 	{
 		timestamps: true,
-		// lägger till createdAt & updatedAt nyckel inuti objektet
 		collection: 'menu',
 		// mongoose looks for plural words (ex. "menus") in the database & the collection is called "menu" in singular
 		// "collection": 'menu' forces mongoose to look for that singular word in the database & not a plural word

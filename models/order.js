@@ -16,7 +16,8 @@ const orderSchema = new mongoose.Schema(
 		},
 		guestId: {
 			type: String,
-			// använder guestId om userId inte finns (logiken finns i routes - orders.js)
+			// använder guestId om userId inte finns
+			// (logiken finns i routes - orders.js)
 		},
 		products: [
 			{
