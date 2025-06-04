@@ -1,5 +1,6 @@
 import Cart from "../models/cart.js";
 import { v4 as uuid } from "uuid";
+import Menu from "../models/menu.js";
 
 //Hämta alla carts (admin)
 export async function getAllCarts() {
@@ -33,7 +34,7 @@ export async function getCartById(cartId) {
 async function findOrCreateCart({ cartId, guestId, userId }) {
   let cart = null;
 
-  // 1. Leta först på cartId (om du redan har en aktiv cart)
+  // Leta först på cartId (om du redan har en aktiv cart)
   if (cartId) {
     cart = await Cart.findOne({ cartId });
   }
@@ -41,12 +42,12 @@ async function findOrCreateCart({ cartId, guestId, userId }) {
   else if (userId) {
     cart = await Cart.findOne({ userId });
   }
-  // 3. Om inget cartId eller userId finns, kolla efter guestId
+  // Om inget cartId eller userId finns, kolla efter guestId
   else if (guestId) {
     cart = await Cart.findOne({ guestId });
   }
 
-  // 4. Om ingen cart hittats än, så skapas en ny
+  // Om ingen cart hittats än, så skapas en ny
   if (!cart) {
     cart = new Cart({
       // Skapa nytt cartId om inget finns (alltid "cart-xxxxx")
@@ -65,6 +66,11 @@ async function findOrCreateCart({ cartId, guestId, userId }) {
 
 // Servicefunktion för att uppdatera cartens innehåll (lägga till, uppdatera, ta bort produkt)
 export async function updateCart({ cartId, userId, guestId, prodId, qty }) {
+  //Kollar så att produkt id:t finns i menyn
+  const menuItem = await Menu.findOne({ prodId });
+  if (!menuItem) {
+    throw new Error("You can only add items from the menu!");
+  }
   // Hitta eller skapa carten först
   let cart = await findOrCreateCart({ cartId, guestId, userId });
 
