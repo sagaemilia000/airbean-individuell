@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 
 export async function registerUser(user) {
-    try{
+    try {
         const result = await User.create(user) 
         return result
     } catch(error) {
@@ -16,10 +16,10 @@ export async function registerUser(user) {
             message: 'User could not be created'
         };
     }
-}
+};
 
 export async function findUser(username) {
-    try{
+    try {
         const user = await User.findOne({ username : username }) 
         if(user) return user; 
         else throw new Error('No user found')

@@ -1,9 +1,8 @@
-// --> models -- user.js
 import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import { findUser, registerUser } from '../services/usersServices.js';
 import { validateAuthBody } from '../middleware/validateAuthBody.js';
-import { checkIfLoggedIn } from '../middleware/checkIfLoggedIn.js'; //om inloggad måste man logga ut innan man kan skapa nytt konto igen
+import { checkIfLoggedIn } from '../middleware/checkIfLoggedIn.js';
 
 const router = Router();
 
