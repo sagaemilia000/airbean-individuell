@@ -3,11 +3,20 @@ import Menu from '../models/menu.js';
 
 const router = Router();
 
-// call authUser? --> if logged in THEN we can fetch the menu (?)
-
-router.get('/menu', async (req, res) => {
-	const menu = await Menu.find();
-	res.json({ message: 'This is the menu', data: menu });
+router.get('/menu', async (req, res, next) => {
+	try {
+		const menu = await Menu.find();
+		res.status(200).json({
+			success: true,
+			message: 'This is the menu:',
+			data: menu,
+		});
+	} catch (error) {
+		next({
+			status: 500,
+			message: 'Failed to fetch menu - server error.',
+		});
+	}
 });
 
 export default router;
