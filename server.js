@@ -8,6 +8,7 @@ import authRouter from './routes/auth.js';
 import logger from './middleware/logger.js';
 import cart from './routes/cart.js';
 
+
 //config
 dotenv.config();
 const app = express();
