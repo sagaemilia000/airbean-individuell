@@ -8,12 +8,20 @@ const router = Router();
 
 // REGISTER
 router.post('/register', checkIfLoggedIn, validateAuthBody, async (req, res, next) => {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
+
+    if (!role || (role !== 'user' && role !== 'admin')) {
+        return next({
+            status: 400,
+            message: 'Role is required and must be either "user" or "admin"',
+        });
+    }
 
     try {
         const result = await registerUser({
             username,
             password,
+            role,
             userId: `user-${uuid().substring(0, 5)}`
         });
     
