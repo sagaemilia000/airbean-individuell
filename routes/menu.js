@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import Menu from '../models/menu.js';
-import { createProduct } from '../services/menuServices.js';
+import { createProduct, updateProduct, deleteProduct } from '../services/menuServices.js';
 import { checkIfAdmin } from '../middleware/checkIfAdmin.js';
 import { v4 as uuid } from 'uuid';
 
 const router = Router();
 
-router.get('/menu', async (req, res, next) => {
+router.get('/', async (req, res, next) => {
 	try {
 		const menu = await Menu.find();
 		res.status(200).json({
@@ -22,7 +22,10 @@ router.get('/menu', async (req, res, next) => {
 	}
 });
 
-router.post('/menu', checkIfAdmin, async (req, res, next) => {
+
+// ----> NEW <---- //
+// POST new product
+router.post('/', checkIfAdmin, async (req, res, next) => {
     const { title, desc, price } = req.body;
     
 	if(title && desc && price) {
@@ -50,5 +53,65 @@ router.post('/menu', checkIfAdmin, async (req, res, next) => {
         })
     }
 });
+
+// PUT product
+router.put('/:prodId', checkIfAdmin, async (req, res, next) => {
+	const { prodId } = req.params;
+    const { title, desc, price } = req.body;
+
+    if (title && desc && price) {
+        const result = await updateProduct(prodId, {
+            title,
+            desc,
+            price,
+			modifiedAt: new Date()
+        });
+
+        if (result) {
+            res.status(200).json({
+                success: true,
+                message: 'Product updated successfully',
+                updatedProduct: result
+            });
+        } else {
+            next({
+                status: 400,
+                message: 'Product could not be updated'
+            });
+        }
+    } else {
+        next({
+            status: 400,
+            message: 'Title, description, and price are required'
+        });
+    }
+});
+
+// DELETE product
+router.delete('/:prodId', checkIfAdmin, async (req, res, next) => {
+    const { prodId } = req.params;
+
+    try {
+        const result = await deleteProduct(prodId);
+
+        if (result) {
+            res.status(200).json({
+                success: true,
+                message: 'Product deleted successfully'
+            });
+        } else {
+            next({
+                status: 404,
+                message: 'Product not found'
+            });
+        }
+    } catch (error) {
+        next({
+            status: 500,
+            message: 'An error occurred while trying to delete the product'
+        });
+    }
+});
+
 
 export default router;
