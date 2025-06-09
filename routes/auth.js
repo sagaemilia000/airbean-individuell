@@ -11,6 +11,7 @@ router.post('/register', checkIfLoggedIn, validateAuthBody, async (req, res, nex
     const { username, password, role } = req.body;
 
     // ----> UPDATED <---- //
+    
     if (!role || (role !== 'user' && role !== 'admin')) {
         return next({
             status: 400,
