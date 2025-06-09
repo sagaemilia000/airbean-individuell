@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(logger);
 
 // ROUTES
-app.use('/api', menuRoutes);
+app.use('/api/menu', menuRoutes);
 app.use('/api', ordersRoutes);
 app.use('/api/auth', authRouter);
 app.use('/api/cart', cart);

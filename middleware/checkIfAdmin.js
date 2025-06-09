@@ -1,3 +1,5 @@
+// ----> NEW <---- //
+
 export function checkIfAdmin(req, res, next) {
     const user = global.user;
   
