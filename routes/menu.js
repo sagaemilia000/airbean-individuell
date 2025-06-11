@@ -3,6 +3,7 @@ import Menu from '../models/menu.js';
 import { createProduct, updateProduct, deleteProduct } from '../services/menuServices.js';
 import { checkIfAdmin } from '../middleware/checkIfAdmin.js';
 import { v4 as uuid } from 'uuid';
+import { authenticate } from '../middleware/authenticate.js';
 
 const router = Router();
 
@@ -24,8 +25,9 @@ router.get('/', async (req, res, next) => {
 
 
 // ----> NEW <---- //
+
 // POST new product
-router.post('/', checkIfAdmin, async (req, res, next) => {
+router.post('/', authenticate, checkIfAdmin, async (req, res, next) => {
     const { title, desc, price } = req.body;
     
 	if(title && desc && price) {
@@ -55,7 +57,7 @@ router.post('/', checkIfAdmin, async (req, res, next) => {
 });
 
 // PUT product
-router.put('/:prodId', checkIfAdmin, async (req, res, next) => {
+router.put('/:prodId', authenticate, checkIfAdmin, async (req, res, next) => {
 	const { prodId } = req.params;
     const { title, desc, price } = req.body;
 
@@ -88,7 +90,7 @@ router.put('/:prodId', checkIfAdmin, async (req, res, next) => {
 });
 
 // DELETE product
-router.delete('/:prodId', checkIfAdmin, async (req, res, next) => {
+router.delete('/:prodId', authenticate, checkIfAdmin, async (req, res, next) => {
     const { prodId } = req.params;
 
     try {

@@ -4,13 +4,15 @@ import { findUser, registerUser } from '../services/usersServices.js';
 import { validateAuthBody } from '../middleware/validateAuthBody.js';
 import { checkIfLoggedIn } from '../middleware/checkIfLoggedIn.js';
 
+import { hashPassword, comparePassword, signToken } from '../utils/index.js';
+
 const router = Router();
+
+// ----> UPDATED <---- //
 
 // REGISTER
 router.post('/register', checkIfLoggedIn, validateAuthBody, async (req, res, next) => {
     const { username, password, role } = req.body;
-
-    // ----> UPDATED <---- //
     
     if (!role || (role !== 'user' && role !== 'admin')) {
         return next({
@@ -20,9 +22,10 @@ router.post('/register', checkIfLoggedIn, validateAuthBody, async (req, res, nex
     }
 
     try {
+        const hashedPassword = await hashPassword(password);
         const result = await registerUser({
             username,
-            password,
+            password: hashedPassword,
             role,
             userId: `user-${uuid().substring(0, 5)}`
         });
@@ -43,34 +46,44 @@ router.post('/login', validateAuthBody, async (req, res, next) => {
 
     const user = await findUser(username);
 
-    if (user) {
-        if (user.password === password) {
-            global.user = user;
-            return res.json({
-                success: true,
-                message: 'User logged in successfully'
-            });
-        } else {
-            return next({
-                status: 400,
-                message: 'Username or password are incorrect'
-            });
-        }
-    } else {
+    if (!user) {
         return next({
             status: 400,
             message: 'Username or password are incorrect'
         });
     }
+
+    const isMatch = await comparePassword(password, user.password);
+
+    if (!isMatch) {
+        return next({
+            status: 400,
+            message: 'Username or password are incorrect'
+        });
+    }
+
+    const token = signToken({
+        username: user.username,
+        role: user.role,
+        userId: user.userId
+    });
+
+    const bearerToken = `Bearer ${token}`;
+
+    return res.json({
+        success: true,
+        message: 'User logged in successfully',
+        token: bearerToken
+    });
 });
 
 // LOGOUT
-router.get('/logout', (req, res) => {
-    global.user = null; 
-    res.json({
-        success : true,
-        message : 'User logged out successfully'
-    });
-});
+// router.get('/logout', (req, res) => {
+//     global.user = null; 
+//     res.json({
+//         success : true,
+//         message : 'User logged out successfully'
+//     });
+// });
 
 export default router;
