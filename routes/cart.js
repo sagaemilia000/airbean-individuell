@@ -1,19 +1,15 @@
 import { Router } from "express";
-import { v4 as uuid } from "uuid";
 import { getAllCarts, getCartById, updateCart } from "../services/cartServices.js";
 import validateCartInput from "../middleware/validateCartInput.js";
 import { validateProdId } from "../middleware/validateProdId.js";
+import { authenticate } from '../middleware/authenticate.js';
 
 const router = Router();
 
-// GET all carts (admin)
-router.get("/", async (req, res, next) => {
-  // Kolla om user är admin
-  //   if (!global.user || global.user.role !== "admin") {
-  //     return res.status(403).json({ message: "Not authorized" });
-  //   }
+// GET all carts 
+router.get("/", authenticate, async (req, res, next) => {
 
-  const carts = await getAllCarts(); //hämtar alla carts
+  const carts = await getAllCarts();
   if (carts && carts.length > 0) {
     res.json({
       success: true,
@@ -25,7 +21,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // GET cart by cartId
-router.get("/:cartId", async (req, res, next) => {
+router.get("/:cartId", authenticate, async (req, res, next) => {
   const { cartId } = req.params;
   const cart = await getCartById(cartId);
   if (cart) {
@@ -38,15 +34,14 @@ router.get("/:cartId", async (req, res, next) => {
   }
 });
 
+// ----> UPDATED <---- //
+
 // PUT update cart
-router.put("/", validateCartInput, validateProdId, async (req, res, next) => {
-  // Hämta userId från global.user om någon är inloggad
-  const userId = global.user ? global.user.userId : null;
-  // Plocka ut cartId och guestId (om de finns) samt prodId och qty
+router.put("/", authenticate, validateCartInput, validateProdId, async (req, res, next) => {
+  const userId = req.user?.userId;
   const { prodId, qty, cartId, guestId } = req.body;
 
   try {
-    // Skicka alla id:n vidare till service-funktionen
     const cart = await updateCart({ cartId, userId, guestId, prodId, qty });
     res.json({ success: true, cart });
   } catch (error) {
