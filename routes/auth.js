@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import { findUser, registerUser } from '../services/usersServices.js';
 import { validateAuthBody } from '../middleware/validateAuthBody.js';
-import { checkIfLoggedIn } from '../middleware/checkIfLoggedIn.js';
 
 import { hashPassword, comparePassword, signToken } from '../utils/index.js';
 
@@ -11,7 +10,7 @@ const router = Router();
 // ----> UPDATED <---- //
 
 // REGISTER
-router.post('/register', checkIfLoggedIn, validateAuthBody, async (req, res, next) => {
+router.post('/register', validateAuthBody, async (req, res, next) => {
     const { username, password, role } = req.body;
     
     if (!role || (role !== 'user' && role !== 'admin')) {
@@ -78,12 +77,12 @@ router.post('/login', validateAuthBody, async (req, res, next) => {
 });
 
 // LOGOUT
-// router.get('/logout', (req, res) => {
-//     global.user = null; 
-//     res.json({
-//         success : true,
-//         message : 'User logged out successfully'
-//     });
-// });
+router.get('/logout', (req, res) => {
+  
+    res.json({
+      success: true,
+      message: 'User logged out successfully. Please remove token.'
+    });
+  });
 
 export default router;

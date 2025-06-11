@@ -40,7 +40,8 @@ router.post('/', authenticate, checkIfAdmin, async (req, res, next) => {
         if(result) {
             res.status(201).json({
                 success : true,
-                message : 'New product created successfully'
+                message : 'New product created successfully',
+                newProduct : result
             })
         } else {
             next({
@@ -99,7 +100,8 @@ router.delete('/:prodId', authenticate, checkIfAdmin, async (req, res, next) => 
         if (result) {
             res.status(200).json({
                 success: true,
-                message: 'Product deleted successfully'
+                message: 'Product deleted successfully',
+                deletedProduct: result
             });
         } else {
             next({
